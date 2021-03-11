@@ -1,5 +1,10 @@
-s = 'A8492QJ835433'
-s = input("INPUT: ")
+#cython: language_level=3
+
+import sys
+if len(sys.argv) == 2:
+    s = sys.argv[1]
+else:
+    s = input("INPUT: ")
 
 import itertools
 
@@ -40,7 +45,7 @@ combinations = comb_exclude_border(range(len(ar)))
 # 100 -> [[0,1,2,3], [6,7,8]]
 sum_buf = {}
 for comb in combinations:
-    sum_val = sum(comb)
+    sum_val = sum([ar[index] for index in comb])
     if sum_val in sum_buf:
         sum_buf[sum_val].append(arr_to_bitarray(comb))
     else:
