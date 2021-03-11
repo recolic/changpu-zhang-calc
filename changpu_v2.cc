@@ -19,11 +19,13 @@ inline uint8_t basic_char_to_int(char c) {
     return ls.find(c);
 }
 
-
-
-int main(int argc, char **argv) {
-    rlib::opt_parser args(argc, argv);
-    auto input = args.getSubCommand();
+// This function is only efficent on small string.
+// With length < 15.
+// length=16, time=67ms
+// length=15, time=13ms
+// length=14, time<6ms
+// length<14, time<6ms
+auto end2end_changpu_solve_short(string input) {
     assert(input.size() <= 64); // we're using uint64 to represent combination.
 
     std::for_each(input.begin(), input.end(), [](auto &c) {
@@ -35,7 +37,6 @@ int main(int argc, char **argv) {
     std::unordered_map<uint64_t, std::vector<uint64_t>> sum_val_map;
     std::vector<uint64_t> comb_sum_val_cache(1<<input.size(), 0);
     auto insert_pair_to_sum_val_map = [&sum_val_map](uint64_t k, uint64_t v) {
-        // rlib::println("DEBUG: map_insert", k, v);
         auto iter = sum_val_map.find(k);
         if(iter == sum_val_map.end()) {
             sum_val_map.try_emplace(k, 1, v);
@@ -50,7 +51,6 @@ int main(int argc, char **argv) {
     for(uint64_t comb = 1; comb < 1<<input.size(); ++comb) {
         if((comb & 1) == 1) {
             // For odd number, no need to fill cache.
-            // rlib::printfln("DEBUG: GET cache[{}]={}", comb-1, comb_sum_val_cache[comb-1]);
             const auto sum_val = comb_sum_val_cache[comb-1] + input[0];
             insert_pair_to_sum_val_map(sum_val, comb);
         }
@@ -69,7 +69,6 @@ int main(int argc, char **argv) {
                 // In this case, we use two cache.
                 : comb_sum_val_cache[cache_slot_left] + comb_sum_val_cache[cache_slot_right];
 
-            // rlib::printfln("DEBUG: SET cache[{}]={}", comb, sum_val);
             comb_sum_val_cache[comb] = sum_val;
             insert_pair_to_sum_val_map(sum_val, comb);
         }
@@ -116,12 +115,44 @@ int main(int argc, char **argv) {
         }
         return res;
     };
+    std::vector<std::pair<string, string>> result_in_string;
     for(const auto &answer : winned_answers) {
-        rlib::println(naive_answer_to_string(answer.first), "===", naive_answer_to_string(answer.second));
+        result_in_string.emplace_back(naive_answer_to_string(answer.first), naive_answer_to_string(answer.second));
     }
 
+    return result_in_string;
+}
 
 
+auto end2end_changpu_solve(string input) {
+    if(input.size() <= 16)
+        return end2end_changpu_solve_short(input);
 
+    // try to split the input, find the best result for each piece.
+    std::sort(input.begin(), input.end());
+    auto splits = input.size() / 14 + 1;
+    auto splited_base_size = input.size() / splits;
+    auto xtra = input.size() % splits;
 
+    string processedL, processedR;
+    for(auto i = 0; i < splits; ++i) {
+        auto begin_pos = i*splited_base_size + (i > xtra ? i : xtra);
+        auto piece_len = splited_base_size + (i >= xtra ? 0 : 1);
+        auto piece_result = end2end_changpu_solve_short(input.substr(begin_pos, piece_len));
+        if(piece_result.empty())
+            throw std::runtime_error("gg");
+        processedL += piece_result[0].first;
+        processedR += piece_result[0].second;
+    }
+    return decltype(end2end_changpu_solve_short(input)) {std::make_pair(processedL, processedR)};
+}
+
+int main(int argc, char **argv) {
+    rlib::opt_parser args(argc, argv);
+    auto input = args.getSubCommand();
+
+    auto answers = end2end_changpu_solve(input);
+    for(const auto &answer : answers) {
+        rlib::println(answer.first, "===", answer.second);
+    }
 }
