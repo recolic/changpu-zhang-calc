@@ -1,0 +1,13 @@
+image: gcc
+
+before_script:
+  - git clone https://git.recolic.net/root/rlib.git
+  - cd rlib && make install && cd ..
+
+build:
+  script:
+    - g++ changpu_v2.cc -o changpu_v2_linux64 -std=c++17 -static -O3
+  artifacts:
+    paths:
+      - changpu_v2_linux64
+
