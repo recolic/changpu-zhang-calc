@@ -11,11 +11,11 @@ using namespace std::literals;
 
 // argument should be valid.
 inline char basic_int_to_char(uint8_t i) {
-    constexpr auto ls = "0A23456789JQK";
+    constexpr auto ls = "xA234567890JQK";
     return ls[i];
 }
 inline uint8_t basic_char_to_int(char c) {
-    constexpr auto ls {"0A23456789JQK"sv};
+    constexpr auto ls {"xA234567890JQK"sv};
     return ls.find(c);
 }
 

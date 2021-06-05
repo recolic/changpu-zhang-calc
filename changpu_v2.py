@@ -9,10 +9,10 @@ else:
 import itertools
 
 def basic_char_to_int(ch):
-    ls = '0A23456789JQK'
+    ls = 'xA234567890JQK'
     return ls.find(ch)
 def basic_int_to_char(i):
-    ls = '0A23456789JQK'
+    ls = 'xA234567890JQK'
     return ls[i]
 
 def comb_exclude_border(ar):
