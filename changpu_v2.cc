@@ -16,7 +16,7 @@ inline char basic_int_to_char(uint8_t i) {
 }
 inline uint8_t basic_char_to_int(char c) {
     constexpr auto ls {"xA234567890JQK"sv};
-    return ls.find(c);
+    return ls.find(toupper(c));
 }
 
 // This function is only efficent on small string.
